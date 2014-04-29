@@ -60,8 +60,8 @@ def main():
       logging.warning("Request for " + url + " caused an invalid schema exception.")
     except requests.exceptions.ConnectionError:
       logging.warning("Request for " + url + " caused a connection error.")
-    except Exception:
-      logging.warning("Request for " + url + " caused an unknown exception.")
+    except Exception as e:
+      logging.warning("Request for " + url + " threw " + str(e))
 
   db_manager.close()
 
