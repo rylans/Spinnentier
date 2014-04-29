@@ -1,10 +1,9 @@
-import os.path
 import requests
-import sqlite3
 import re
 from bs4 import BeautifulSoup
 from urlparse import urljoin
 import logging
+import dbmanager
 
 DB_NAME = "crawler.db"
 
@@ -18,30 +17,13 @@ def get_urls(baseurl, htmltext):
       ret.append(urljoin(baseurl, link))
   return ret
 
-def get_db():
-  if os.path.isfile(DB_NAME):
-    return sqlite3.connect(DB_NAME)
-  else:
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute('''CREATE TABLE pages(url text, size integer)''')
-    c.execute('''CREATE TABLE frontier(url text, size integer)''')
-    conn.commit()
-    return conn
-
-def get_visited_from_db(conn):
-  return [row[0] for row in conn.cursor().execute('SELECT * FROM pages')]
-
-def get_frontier_from_db(conn):
-  return [row[0] for row in conn.cursor().execute('SELECT * FROM frontier')]
-
 def main():
+  db_manager = dbmanager.dbmanager(DB_NAME)
   logging.basicConfig(filename = 'crawler.log', filemode='w', level=logging.INFO)
-  frontier = ["http://www.dmoz.org/", "http://en.wikipedia.org/wiki/Main_Page"]
+  frontier = ["http://www.microsoft.com/", "http://yahoo.co.jp"]
   visited = {}
-  db_con = get_db()
-  db_visited = get_visited_from_db(db_con)
-  db_frontier = get_frontier_from_db(db_con)
+  db_visited = db_manager.get_visited()
+  db_frontier = db_manager.get_frontier()
 
   frontier += db_frontier
 
@@ -60,28 +42,26 @@ def main():
       visited[url] = 1
       r = requests.get(url, timeout=0.7)
       if(200 <= r.status_code <= 299):
-	params = (url, len(r.text))
-
-	db_con.cursor().execute('INSERT INTO pages VALUES (?,?)', params)
-	db_con.commit()
-
+	db_manager.insert_visited(url, len(r.text))
 	page_urls = get_urls(url, r.text)
 
 	for page_url in page_urls:
-	  params = (page_url, 0)
-	  db_con.cursor().execute('INSERT INTO frontier VALUES (?,?)', params)
-	db_con.commit()
+	  db_manager.insert_frontier(page_url, url)
 
 	frontier += page_urls
       else:
 	logging.warning("Request for " + url + " was not in 2xx range.")
+
     except requests.exceptions.Timeout:
       logging.warning("Request for " + url + " timed out.")
+    except requests.exceptions.InvalidSchema:
+      logging.warning("Request for " + url + " caused an invalid schema exception.")
     except requests.exceptions.ConnectionError:
       logging.warning("Request for " + url + " caused a connection error.")
+    except Exception:
+      logging.warning("Request for " + url + " caused an unknown exception.")
 
-  if db_con:
-    db_con.close()
+  db_manager.close()
 
 if __name__ == '__main__':
   main()
