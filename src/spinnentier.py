@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from urlparse import urljoin
 import logging
 import dbmanager
+from random import shuffle
 
 DB_NAME = "crawler.db"
 
@@ -20,12 +21,13 @@ def get_urls(baseurl, htmltext):
 def main():
   db_manager = dbmanager.dbmanager(DB_NAME)
   logging.basicConfig(filename = 'crawler.log', filemode='w', level=logging.INFO)
-  frontier = ["http://www.microsoft.com/", "http://yahoo.co.jp"]
+  frontier = ["http://sina.com.cn/"]
   visited = {}
   db_visited = db_manager.get_visited()
   db_frontier = db_manager.get_frontier()
 
   frontier += db_frontier
+  #shuffle(frontier)
 
   for url in db_visited:
     print "Already visited: " + url

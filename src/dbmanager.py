@@ -12,6 +12,21 @@ class dbmanager:
       c.execute('''CREATE TABLE frontier(url text, parenturl text)''')
       self.con.commit()
 
+  def show_all(self):
+    return self.show_pages() + "\n" + self.show_frontier()
+
+  def show_pages(self):
+    rows = [row for row in self.con.cursor().execute('SELECT COUNT(*) FROM pages')]
+    count = rows[0][0]
+    string = "PAGES (" + str(count) + ")"
+    return string
+
+  def show_frontier(self):
+    rows = [row for row in self.con.cursor().execute('SELECT COUNT(*) FROM frontier')]
+    count = rows[0][0]
+    string = "FRONTIER (" + str(count) + ")"
+    return string
+
   def get_visited(self):
     return [row[0] for row in self.con.cursor().execute('SELECT * FROM pages')]
 
@@ -30,3 +45,7 @@ class dbmanager:
 
   def close(self):
     self.con.close()
+
+if __name__ == '__main__':
+  dbman = dbmanager("crawler.db")
+  print dbman.show_all()
