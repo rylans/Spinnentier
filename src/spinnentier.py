@@ -2,11 +2,16 @@ import requests
 import re
 from bs4 import BeautifulSoup
 from urlparse import urljoin
+from urlparse import urlparse
 import logging
 import dbmanager
 from random import shuffle
+from urlnorm import norms
 
 DB_NAME = "crawler.db"
+
+def is_absolute(url):
+  return bool(urlparse(url).netloc)
 
 def get_urls(baseurl, htmltext):
   soup = BeautifulSoup(htmltext)
@@ -15,8 +20,18 @@ def get_urls(baseurl, htmltext):
   for tag in links:
     link = tag.get('href', None)
     if link != None:
-      ret.append(urljoin(baseurl, link))
+      ret.append(join_urls(baseurl, link))
   return ret
+
+def join_urls(baseurl, url):
+  if is_absolute(url):
+    return norms(url)
+  elif url.startswith('www.'):
+    http_url = "http://" + url
+    if is_absolute(http_url):
+      return norms(http_url)
+  else:
+    return norms(urljoin(baseurl, url))
 
 def main():
   db_manager = dbmanager.dbmanager(DB_NAME)
