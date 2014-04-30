@@ -1,48 +1,18 @@
-import requests
-import re
-from bs4 import BeautifulSoup
-from urlparse import urljoin
-from urlparse import urlparse
 import logging
 import dbmanager
 from random import shuffle
-from urlnorm import norms
 from requester import Requester
+from urlutils import get_urls
 
 DB_NAME = "crawler.db"
 LOG_NAME = "crawler.log"
-
-def is_absolute(url):
-  return bool(urlparse(url).netloc)
-
-def get_urls(baseurl, htmltext):
-  soup = BeautifulSoup(htmltext)
-  ret = []
-  links = soup.find_all('a')
-  for tag in links:
-    link = tag.get('href', None)
-    if link != None:
-      ret.append(join_urls(baseurl, link))
-  return ret
-
-def join_urls(baseurl, url):
-  if is_absolute(url):
-    return norms(url)
-  elif url.startswith('www.'):
-    http_url = "http://" + url
-    if is_absolute(http_url):
-      return norms(http_url)
-  else:
-    return norms(urljoin(baseurl, url))
-    
-def http_success(status_code):
-  return 200 <= status_code < 299
+MAX_THREADS = 12
+TIME_LIMIT = 0.7
 
 def main():
   db_manager = dbmanager.dbmanager(DB_NAME)
   logging.basicConfig(filename = LOG_NAME, filemode='w', level=logging.INFO)
   frontier = ["http://www.yahoo.co.jp","http://www.twitter.com"]
-  frontier = [norms(f) for f in frontier]
   visited = {}
   db_visited = db_manager.get_visited()
   db_frontier = db_manager.get_frontier()
@@ -54,7 +24,6 @@ def main():
     print "Already visited: " + url
     visited[url] = 1
 
-  MAX_THREADS = 6
   current_threads = 0
   threads = []
   data = []
@@ -93,7 +62,7 @@ def main():
       d = []
       data.append(d)
       t_urls.append(url)
-      t = Requester(url, 0.7, d) 
+      t = Requester(url, TIME_LIMIT, d) 
       t.start()
       threads.append(t)
       current_threads += 1
