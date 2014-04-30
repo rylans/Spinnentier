@@ -41,9 +41,9 @@ def main():
 
       for i in range(len(t_urls)):
 	htmldata = ""
-	db_manager.insert_visited(t_urls[i], len(data[i]))
 	if data[i]:
 	  htmldata = data[i][0]
+	db_manager.insert_visited(t_urls[i], len(htmldata))
 
 	page_urls = get_urls(t_urls[i], htmldata)
 	for page_url in page_urls:
@@ -72,11 +72,10 @@ def main():
     t.join()
 
   for i in range(len(t_urls)):
-    db_manager.insert_visited(t_urls[i], len(data[i]))
-    
     htmldata = ""
     if data[i]:
       htmldata = data[i][0]
+    db_manager.insert_visited(t_urls[i], len(htmldata))
 
     page_urls = get_urls(t_urls[i], htmldata)
     for page_url in page_urls:
