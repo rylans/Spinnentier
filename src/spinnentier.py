@@ -32,11 +32,15 @@ def join_urls(baseurl, url):
       return norms(http_url)
   else:
     return norms(urljoin(baseurl, url))
+    
+def http_success(status_code):
+  return 200 <= status_code < 299
 
 def main():
   db_manager = dbmanager.dbmanager(DB_NAME)
   logging.basicConfig(filename = 'crawler.log', filemode='w', level=logging.INFO)
-  frontier = ["http://sina.com.cn/"]
+  frontier = ["http://www.yahoo.co.jp","http://www.twitter.com"]
+  frontier = [norms(f) for f in frontier]
   visited = {}
   db_visited = db_manager.get_visited()
   db_frontier = db_manager.get_frontier()
@@ -58,7 +62,7 @@ def main():
     try:
       visited[url] = 1
       r = requests.get(url, timeout=0.7)
-      if(200 <= r.status_code <= 299):
+      if http_success(r.status_code):
 	db_manager.insert_visited(url, len(r.text))
 	page_urls = get_urls(url, r.text)
 
@@ -67,7 +71,7 @@ def main():
 
 	frontier += page_urls
       else:
-	logging.warning("Request for " + url + " was not in 2xx range.")
+	logging.warning("Status code for " + url + " was " + str(r.status_code))
 
     except requests.exceptions.Timeout:
       logging.warning("Request for " + url + " timed out.")
