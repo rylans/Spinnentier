@@ -7,8 +7,10 @@ import logging
 import dbmanager
 from random import shuffle
 from urlnorm import norms
+from requester import Requester
 
 DB_NAME = "crawler.db"
+LOG_NAME = "crawler.log"
 
 def is_absolute(url):
   return bool(urlparse(url).netloc)
@@ -38,7 +40,7 @@ def http_success(status_code):
 
 def main():
   db_manager = dbmanager.dbmanager(DB_NAME)
-  logging.basicConfig(filename = 'crawler.log', filemode='w', level=logging.INFO)
+  logging.basicConfig(filename = LOG_NAME, filemode='w', level=logging.INFO)
   frontier = ["http://www.yahoo.co.jp","http://www.twitter.com"]
   frontier = [norms(f) for f in frontier]
   visited = {}
@@ -46,41 +48,71 @@ def main():
   db_frontier = db_manager.get_frontier()
 
   frontier += db_frontier
-  #shuffle(frontier)
+  shuffle(frontier)
 
   for url in db_visited:
     print "Already visited: " + url
     visited[url] = 1
 
+  MAX_THREADS = 6
+  current_threads = 0
+  threads = []
+  data = []
+  t_urls = []
+  
   for url in frontier:
     if visited.get(url, None):
       logging.info("Not requesting " + url + " because it has already been visited.")
       continue
 
-    logging.info("Requesting " + url)
-    print "Requesting " + url
-    try:
-      visited[url] = 1
-      r = requests.get(url, timeout=0.7)
-      if http_success(r.status_code):
-	db_manager.insert_visited(url, len(r.text))
-	page_urls = get_urls(url, r.text)
+    if(current_threads >= MAX_THREADS):
+      current_threads = 0
+      for t in threads:
+	t.join()
 
+      for i in range(len(t_urls)):
+	htmldata = ""
+	db_manager.insert_visited(t_urls[i], len(data[i]))
+	if data[i]:
+	  htmldata = data[i][0]
+
+	page_urls = get_urls(t_urls[i], htmldata)
 	for page_url in page_urls:
-	  db_manager.insert_frontier(page_url, url)
-
+	  db_manager.insert_frontier(page_url, t_urls[i])
 	frontier += page_urls
-      else:
-	logging.warning("Status code for " + url + " was " + str(r.status_code))
 
-    except requests.exceptions.Timeout:
-      logging.warning("Request for " + url + " timed out.")
-    except requests.exceptions.InvalidSchema:
-      logging.warning("Request for " + url + " caused an invalid schema exception.")
-    except requests.exceptions.ConnectionError:
-      logging.warning("Request for " + url + " caused a connection error.")
-    except Exception as e:
-      logging.warning("Request for " + url + " threw " + str(e))
+      threads = []
+      data = []
+      t_urls = []
+
+    if(current_threads < MAX_THREADS):
+      logging.info("Requesting " + url)
+      print "Requesting " + url + " as t=" + str(current_threads)
+      visited[url] = 1
+
+      d = []
+      data.append(d)
+      t_urls.append(url)
+      t = Requester(url, 0.7, d) 
+      t.start()
+      threads.append(t)
+      current_threads += 1
+
+  #Join all threads before closing the database
+  for t in threads:
+    t.join()
+
+  for i in range(len(t_urls)):
+    db_manager.insert_visited(t_urls[i], len(data[i]))
+    
+    htmldata = ""
+    if data[i]:
+      htmldata = data[i][0]
+
+    page_urls = get_urls(t_urls[i], htmldata)
+    for page_url in page_urls:
+      db_manager.insert_frontier(page_url, t_urls[i])
+    frontier += page_urls
 
   db_manager.close()
 
