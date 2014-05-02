@@ -11,6 +11,7 @@ class dbmanager:
       c.execute('''CREATE TABLE pages(url text, size integer)''')
       c.execute('''CREATE TABLE frontier(url text, parenturl text)''')
       self.con.commit()
+    self.con.text_factory = str
 
   def show_all(self):
     string = ""
