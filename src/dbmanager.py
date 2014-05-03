@@ -2,6 +2,9 @@ import os.path
 import sqlite3
 
 class dbmanager:
+  PAGE_TABLE = "pages"
+  FRONTIER_TABLE = "frontier"
+
   def __init__(self, database_name):
     if os.path.isfile(database_name):
       self.con = sqlite3.connect(database_name)
@@ -21,46 +24,52 @@ class dbmanager:
     string += self.sample_frontier()
     return string
 
-  def show_pages(self):
-    rows = [row for row in self.con.cursor().execute('SELECT COUNT(*) FROM pages')]
+  def _show_table(self, tablename):
+    rows = [row for row in self.con.cursor().execute('SELECT COUNT(*) FROM ' + tablename)]
     count = rows[0][0]
-    string = "PAGES (" + str(count) + ")"
+    string = tablename + " (" + str(count) + ")"
     return string
 
+  def show_pages(self):
+    return self._show_table(dbmanager.PAGE_TABLE)
+
   def show_frontier(self):
-    rows = [row for row in self.con.cursor().execute('SELECT COUNT(*) FROM frontier')]
-    count = rows[0][0]
-    string = "FRONTIER (" + str(count) + ")"
+    return self._show_table(dbmanager.FRONTIER_TABLE)
+    
+  def _sample_table(self, tablename, count):
+    count = str(count)
+    rows = [row for row in self.con.cursor().execute('SELECT * FROM ' + tablename + ' LIMIT ' + count)]
+    string = ""
+    for r in rows:
+      string += r[0] + ", " + str(r[1]) + "\n"
     return string
 
   def sample_pages(self):
-    rows = [row for row in self.con.cursor().execute('SELECT * FROM pages LIMIT 8')]
     string = "URL, SIZE\n"
-    for r in rows:
-      string += r[0] + ", " + str(r[1]) + "\n"
-    return string
+    return string + self._sample_table(dbmanager.PAGE_TABLE, 8)
 
   def sample_frontier(self):
-    rows = [row for row in self.con.cursor().execute('SELECT * FROM frontier LIMIT 8')]
     string = "URL, PARENT\n"
-    for r in rows:
-      string += r[0] + ", " + str(r[1]) + "\n"
-    return string
+    return string + self._sample_table(dbmanager.FRONTIER_TABLE, 8)
+
+  def _get_table(self, tablename):
+    return [row[0] for row in self.con.cursor().execute('SELECT * FROM ' + tablename)]
 
   def get_visited(self):
-    return [row[0] for row in self.con.cursor().execute('SELECT * FROM pages')]
+    return self._get_table(dbmanager.PAGE_TABLE)
 
   def get_frontier(self):
-    return [row[0] for row in self.con.cursor().execute('SELECT * FROM frontier')]
+    return self._get_table(dbmanager.FRONTIER_TABLE)
 
   def insert_visited(self, url, size):
     params = (url, size)
     self.con.cursor().execute('INSERT INTO pages VALUES (?,?)', params)
     self.con.commit()
 
-  def insert_frontier(self, url, parenturl):
-    params = (url, parenturl)
-    self.con.cursor().execute('INSERT INTO frontier VALUES (?,?)', params)
+  def insert_frontier(self, urls, parenturl):
+    for url in urls:
+      params = (url, parenturl)
+      self.con.cursor().execute('INSERT INTO frontier VALUES (?,?)', params)
     self.con.commit()
 
   def close(self):

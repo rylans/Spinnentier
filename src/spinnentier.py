@@ -6,19 +6,19 @@ from urlutils import get_urls
 
 DB_NAME = "crawler.db"
 LOG_NAME = "crawler.log"
-MAX_THREADS = 12
+MAX_THREADS = 8
 TIME_LIMIT = 0.7
 
 def main():
   db_manager = dbmanager.dbmanager(DB_NAME)
   logging.basicConfig(filename = LOG_NAME, filemode='w', level=logging.INFO)
-  frontier = ["http://www.yahoo.co.jp","http://www.twitter.com"]
+  frontier = ["http://rakuten.co.jp"]
   visited = {}
   db_visited = db_manager.get_visited()
   db_frontier = db_manager.get_frontier()
 
   frontier += db_frontier
-  shuffle(frontier)
+  #shuffle(frontier)
 
   for url in db_visited:
     print "Already visited: " + url
@@ -46,8 +46,7 @@ def main():
 	db_manager.insert_visited(t_urls[i], len(htmldata))
 
 	page_urls = get_urls(t_urls[i], htmldata)
-	for page_url in page_urls:
-	  db_manager.insert_frontier(page_url, t_urls[i])
+	db_manager.insert_frontier(page_urls, t_urls[i])
 	frontier += page_urls
 
       threads = []
@@ -78,8 +77,7 @@ def main():
     db_manager.insert_visited(t_urls[i], len(htmldata))
 
     page_urls = get_urls(t_urls[i], htmldata)
-    for page_url in page_urls:
-      db_manager.insert_frontier(page_url, t_urls[i])
+    db_manager.insert_frontier(page_urls, t_urls[i])
     frontier += page_urls
 
   db_manager.close()
