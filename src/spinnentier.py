@@ -12,7 +12,7 @@ TIME_LIMIT = 0.7
 def main():
   db_manager = dbmanager.dbmanager(DB_NAME)
   logging.basicConfig(filename = LOG_NAME, filemode='w', level=logging.INFO)
-  frontier = ["http://rakuten.co.jp"]
+  frontier = ["http://rakuten.co.jp", "http://craigslist.org"]
   visited = {}
   db_visited = db_manager.get_visited()
   db_frontier = db_manager.get_frontier()

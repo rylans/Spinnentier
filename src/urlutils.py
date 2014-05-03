@@ -13,7 +13,12 @@ def get_urls(baseurl, htmltext):
   for tag in links:
     link = tag.get('href', None)
     if link != None:
-      ret.append(join_urls(baseurl, link))
+      try:
+	ret.append(join_urls(baseurl, link))
+      except ValueError:
+	pass
+      except AttributeError:
+	pass
   return ret
 
 def join_urls(baseurl, url):
