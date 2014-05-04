@@ -3,10 +3,11 @@ import logging
 import requests
 
 class Requester(threading.Thread):
-  def __init__(self, url, timeout, output):
+  def __init__(self, url, timeout, output, max_size):
     self.url = url
     self.output = output
     self.timeout = timeout
+    self.max_size = max_size
     super(Requester, self).__init__()
 
   def http_success(self, status_code):
@@ -14,8 +15,25 @@ class Requester(threading.Thread):
 
   def run(self):
     url = self.url
+    r = None
     try:
-      r = requests.get(url, timeout=self.timeout)
+      r = requests.get(url, timeout=self.timeout, stream=True)
+      clength = r.headers.get('content-length')
+      if clength == None:
+	clength = 0
+      else:
+	clength = int(clength)
+      
+      if clength > self.max_size:
+	logging.warning("Request for " + url + " exceed max size.")
+	r.close()
+	return
+
+      if 'text/html' not in r.headers['content-type']:
+	logging.warning("Request for " + url + " was not text/html.")
+	r.close()
+	return
+
       if self.http_success(r.status_code):
 	self.output.append(r.text)
       else:
@@ -28,4 +46,4 @@ class Requester(threading.Thread):
     except requests.exceptions.ConnectionError:
       logging.warning("Request for " + url + " caused a connection error.")
     except Exception as e:
-      logging.warning("Request for " + url + " threw " + str(e))
+      logging.exception("Request for " + url + " threw " + str(e))

@@ -12,11 +12,12 @@ LOG_NAME = "crawler.log"
 MAX_THREADS = 8
 MAX_REQ_PER_DOMAIN = 4
 TIME_LIMIT = 0.7
+MAX_SIZE_BYTES = 1024 * 512
 
 def main():
   db_manager = dbmanager.dbmanager(DB_NAME)
   logging.basicConfig(filename = LOG_NAME, filemode='w', level=logging.INFO)
-  frontier = ["http://rakuten.co.jp", "http://www.amazon.co.uk","http://www.amazon.com"]
+  frontier = ["http://www.reddit.com", "http://www.amazon.co.uk","http://www.amazon.com"]
   visited = {}
   domains = {}
   db_visited = db_manager.get_visited()
@@ -61,7 +62,7 @@ def main():
       d = []
       data.append(d)
       t_urls.append(url)
-      t = Requester(url, TIME_LIMIT, d) 
+      t = Requester(url, TIME_LIMIT, d, MAX_SIZE_BYTES)
       t.start()
       threads.append(t)
       current_threads += 1
