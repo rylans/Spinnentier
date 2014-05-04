@@ -6,6 +6,8 @@ from urlparse import urlparse
 SCHEME_HTTP = 'http://'
 SCHEME_SEP = '://'
 NET_DOT = '.'
+RESOURCE_JS = 'javascript:'
+IMG_EXT = ['.jpeg', '.jpg', '.gif']
 
 def get_domain(url):
   if SCHEME_SEP not in url:
@@ -20,6 +22,14 @@ def is_same_domain(url1, url2):
 
 def is_absolute(url):
   return bool(urlparse(url).netloc)
+
+def is_blacklisted(url):
+  if RESOURCE_JS in url:
+    return True
+  for ext in IMG_EXT:
+    if ext in url:
+      return True
+  return False
 
 def get_urls(baseurl, htmltext):
   soup = BeautifulSoup(htmltext)

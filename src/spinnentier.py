@@ -5,6 +5,7 @@ from requester import Requester
 from urlutils import get_urls
 from urlutils import is_same_domain
 from urlutils import get_domain
+from urlutils import is_blacklisted
 
 DB_NAME = "crawler.db"
 LOG_NAME = "crawler.log"
@@ -40,6 +41,10 @@ def main():
 
     if domains.get(get_domain(url), 0) >= MAX_REQ_PER_DOMAIN:
       logging.info("Not requesting " + url + " because max requests per domain has been exceeded.")
+      continue
+
+    if is_blacklisted(url):
+      logging.info("Not requesting " + url + " because it is blacklisted.")
       continue
 
     if(current_threads < MAX_THREADS):
