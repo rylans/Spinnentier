@@ -3,6 +3,7 @@ import dbmanager
 from random import shuffle
 from requester import Requester
 from urlutils import get_urls
+from urlutils import is_same_domain
 
 DB_NAME = "crawler.db"
 LOG_NAME = "crawler.log"

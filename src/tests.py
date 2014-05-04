@@ -43,5 +43,21 @@ class TestSequence(unittest.TestCase):
     testurl = "http://www.mysite.gov/path/page"
     assert testurl in all_urls
 
+  def test_is_same_domain1(self):
+    url1 = "http://www.amazon.com/gp/store/books"
+    url2 = "http://www.amazon.com/other/path"
+    assert spinnentier.is_same_domain(url1, url2)
+
+  def test_is_same_domain2(self):
+    url1 = "http://www.japan.co.jp/p1"
+    url2 = "http://www.uk.co.uk/p2"
+    assert not spinnentier.is_same_domain(url1, url2)
+
+  def test_is_same_domain3(self):
+    url1 = "www.asdf.org/p1/foo/bar/rel=fsda"
+    url2 = "http://www.asdf.org" 
+    assert spinnentier.is_same_domain(url1, url2)
+
+
 if __name__ == '__main__':
   unittest.main()
