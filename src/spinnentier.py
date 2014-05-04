@@ -4,17 +4,20 @@ from random import shuffle
 from requester import Requester
 from urlutils import get_urls
 from urlutils import is_same_domain
+from urlutils import get_domain
 
 DB_NAME = "crawler.db"
 LOG_NAME = "crawler.log"
 MAX_THREADS = 8
+MAX_REQ_PER_DOMAIN = 4
 TIME_LIMIT = 0.7
 
 def main():
   db_manager = dbmanager.dbmanager(DB_NAME)
   logging.basicConfig(filename = LOG_NAME, filemode='w', level=logging.INFO)
-  frontier = ["http://rakuten.co.jp", "http://craigslist.org"]
+  frontier = ["http://rakuten.co.jp", "http://www.amazon.co.uk","http://www.amazon.com"]
   visited = {}
+  domains = {}
   db_visited = db_manager.get_visited()
   db_frontier = db_manager.get_frontier()
 
@@ -33,6 +36,10 @@ def main():
   for url in frontier:
     if visited.get(url, None):
       logging.info("Not requesting " + url + " because it has already been visited.")
+      continue
+
+    if domains.get(get_domain(url), 0) >= MAX_REQ_PER_DOMAIN:
+      logging.info("Not requesting " + url + " because max requests per domain has been exceeded.")
       continue
 
     if(current_threads >= MAX_THREADS):
@@ -58,6 +65,13 @@ def main():
       logging.info("Requesting " + url)
       print "Requesting " + url + " as t=" + str(current_threads)
       visited[url] = 1
+
+      urldom = get_domain(url)
+      if urldom in domains:
+	domains[urldom] += 1
+      else:
+	domains[urldom] = 1
+      print "dom= " , urldom + ", " + str(domains[urldom])
 
       d = []
       data.append(d)
