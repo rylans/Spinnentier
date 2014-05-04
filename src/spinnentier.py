@@ -42,7 +42,26 @@ def main():
       logging.info("Not requesting " + url + " because max requests per domain has been exceeded.")
       continue
 
-    if(current_threads >= MAX_THREADS):
+    if(current_threads < MAX_THREADS):
+      logging.info("Requesting " + url)
+      print "Requesting " + url + " as t=" + str(current_threads)
+      visited[url] = 1
+
+      urldom = get_domain(url)
+      if urldom in domains:
+	domains[urldom] += 1
+      else:
+	domains[urldom] = 1
+
+      d = []
+      data.append(d)
+      t_urls.append(url)
+      t = Requester(url, TIME_LIMIT, d) 
+      t.start()
+      threads.append(t)
+      current_threads += 1
+
+    if((current_threads >= MAX_THREADS) or (url == frontier[-1])):
       current_threads = 0
       for t in threads:
 	t.join()
@@ -60,40 +79,6 @@ def main():
       threads = []
       data = []
       t_urls = []
-
-    if(current_threads < MAX_THREADS):
-      logging.info("Requesting " + url)
-      print "Requesting " + url + " as t=" + str(current_threads)
-      visited[url] = 1
-
-      urldom = get_domain(url)
-      if urldom in domains:
-	domains[urldom] += 1
-      else:
-	domains[urldom] = 1
-      print "dom= " , urldom + ", " + str(domains[urldom])
-
-      d = []
-      data.append(d)
-      t_urls.append(url)
-      t = Requester(url, TIME_LIMIT, d) 
-      t.start()
-      threads.append(t)
-      current_threads += 1
-
-  #Join all threads before closing the database
-  for t in threads:
-    t.join()
-
-  for i in range(len(t_urls)):
-    htmldata = ""
-    if data[i]:
-      htmldata = data[i][0]
-    db_manager.insert_visited(t_urls[i], len(htmldata))
-
-    page_urls = get_urls(t_urls[i], htmldata)
-    db_manager.insert_frontier(page_urls, t_urls[i])
-    frontier += page_urls
 
   db_manager.close()
 
