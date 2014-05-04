@@ -8,13 +8,14 @@ SCHEME_SEP = '://'
 NET_DOT = '.'
 RESOURCE_JS = 'javascript:'
 IMG_EXT = ['.jpeg', '.jpg', '.gif']
+DOMAIN_PARTS = 3
 
 def get_domain(url):
   if SCHEME_SEP not in url:
     url = SCHEME_HTTP + url
   netloc = urlparse(url).netloc
-  if len(netloc.split(NET_DOT))  > 3:
-    netloc = NET_DOT.join(netloc.split('.')[1:])
+  while len(netloc.split(NET_DOT)) > DOMAIN_PARTS:
+    netloc = NET_DOT.join(netloc.split(NET_DOT)[1:])
   return netloc
 
 def is_same_domain(url1, url2):
@@ -24,6 +25,7 @@ def is_absolute(url):
   return bool(urlparse(url).netloc)
 
 def is_blacklisted(url):
+  url = url.lower()
   if RESOURCE_JS in url:
     return True
   for ext in IMG_EXT:
