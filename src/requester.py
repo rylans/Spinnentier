@@ -26,12 +26,10 @@ class Requester(threading.Thread):
       
       if clength > self.max_size:
 	logging.warning("Request for " + url + " exceed max size.")
-	r.close()
 	return
 
       if 'text/html' not in r.headers['content-type']:
 	logging.warning("Request for " + url + " was not text/html.")
-	r.close()
 	return
 
       if self.http_success(r.status_code):
@@ -47,3 +45,7 @@ class Requester(threading.Thread):
       logging.warning("Request for " + url + " caused a connection error.")
     except Exception as e:
       logging.exception("Request for " + url + " threw " + str(e))
+
+    finally:
+      if r:
+	r.close()
