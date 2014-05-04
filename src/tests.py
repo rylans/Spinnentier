@@ -58,6 +58,12 @@ class TestSequence(unittest.TestCase):
     url2 = "http://www.asdf.org" 
     assert spinnentier.is_same_domain(url1, url2)
 
+  def test_join_urls1(self):
+    base = "//en.wikipedia.org/w/index.php"
+    rel = "?title=Pacific"
+    joint = spinnentier.join_urls(base, rel)
+    correct = "http://en.wikipedia.org/w/index.php?title=Pacific"
+    assert joint == correct
 
 if __name__ == '__main__':
   unittest.main()

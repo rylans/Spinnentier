@@ -49,6 +49,8 @@ def get_urls(baseurl, htmltext):
   return ret
 
 def join_urls(baseurl, url):
+  if baseurl.startswith('//'):
+    baseurl = 'http:' + baseurl
   if is_absolute(url):
     return norms(url)
   elif url.startswith('www.'):

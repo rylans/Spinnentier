@@ -6,17 +6,18 @@ from urlutils import get_urls
 from urlutils import is_same_domain
 from urlutils import get_domain
 from urlutils import is_blacklisted
+from urlutils import join_urls
 
 DB_NAME = "crawler.db"
 LOG_NAME = "crawler.log"
-MAX_THREADS = 8
+MAX_THREADS = 16
 MAX_REQ_PER_DOMAIN = 4
 TIME_LIMIT = 0.7
 MAX_SIZE_BYTES = 1024 * 512
 
 def main():
   db_manager = dbmanager.dbmanager(DB_NAME)
-  logging.basicConfig(filename = LOG_NAME, filemode='w', level=logging.INFO)
+  logging.basicConfig(filename = LOG_NAME, filemode='w', level=logging.WARN)
   frontier = ["http://www.reddit.com", "http://www.amazon.co.uk","http://www.amazon.com"]
   visited = {}
   domains = {}
