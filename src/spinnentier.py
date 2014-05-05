@@ -18,7 +18,7 @@ MAX_SIZE_BYTES = 1024 * 512
 def main():
   db_manager = dbmanager.dbmanager(DB_NAME)
   logging.basicConfig(filename = LOG_NAME, filemode='w', level=logging.WARN)
-  frontier = ["http://www.reddit.com", "http://www.amazon.co.uk","http://www.amazon.com"]
+  frontier = ["http://www.reddit.com"]
   visited = {}
   domains = {}
   db_visited = db_manager.get_visited()

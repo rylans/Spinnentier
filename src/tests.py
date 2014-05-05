@@ -59,10 +59,10 @@ class TestSequence(unittest.TestCase):
     assert spinnentier.is_same_domain(url1, url2)
 
   def test_join_urls1(self):
-    base = "//en.wikipedia.org/w/index.php"
-    rel = "?title=Pacific"
+    base = "http://www.wikipedia.org"
+    rel = "//en.wikipedia.org/w/index.php"
     joint = spinnentier.join_urls(base, rel)
-    correct = "http://en.wikipedia.org/w/index.php?title=Pacific"
+    correct = "http://en.wikipedia.org/w/index.php"
     assert joint == correct
 
 if __name__ == '__main__':

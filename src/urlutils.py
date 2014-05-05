@@ -49,13 +49,14 @@ def get_urls(baseurl, htmltext):
   return ret
 
 def join_urls(baseurl, url):
-  if baseurl.startswith('//'):
-    baseurl = 'http:' + baseurl
-  if is_absolute(url):
+  if url.startswith('//'):
+    url = 'http:' + url
     return norms(url)
   elif url.startswith('www.'):
     http_url = SCHEME_HTTP + url
     if is_absolute(http_url):
       return norms(http_url)
+  elif is_absolute(url):
+    return norms(url)
   else:
     return norms(urljoin(baseurl, url))
