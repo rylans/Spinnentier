@@ -11,14 +11,14 @@ from urlutils import join_urls
 DB_NAME = "crawler.db"
 LOG_NAME = "crawler.log"
 MAX_THREADS = 16
-MAX_REQ_PER_DOMAIN = 4
+MAX_REQ_PER_DOMAIN = 8
 TIME_LIMIT = 0.7
 MAX_SIZE_BYTES = 1024 * 512
 
 def main():
   db_manager = dbmanager.dbmanager(DB_NAME)
   logging.basicConfig(filename = LOG_NAME, filemode='w', level=logging.WARN)
-  frontier = ['http://www.theonion.com']
+  frontier = ['http://www.theonion.com','http://www.reddit.com']
   visited = {}
   domains = {}
   db_visited = db_manager.get_visited()
@@ -79,7 +79,7 @@ def main():
 	  htmldata = data[i][0]
 	db_manager.insert_visited(t_urls[i], len(htmldata))
 
-	page_urls = get_urls(t_urls[i], htmldata)
+	page_urls = list(set(get_urls(t_urls[i], htmldata)))
 	db_manager.insert_frontier(page_urls, t_urls[i])
 	frontier += page_urls
 
