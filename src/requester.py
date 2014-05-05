@@ -30,7 +30,7 @@ class Requester(threading.Thread):
 
       ctype = r.headers.get('content-type', "")
       if 'text/html' not in ctype:
-	logging.warning("Request for " + url + " was not text/html.")
+	logging.warning("Request for " + url + " was not text/html but rather " + ctype)
 	return
 
       if self.http_success(r.status_code):

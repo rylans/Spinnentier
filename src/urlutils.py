@@ -9,7 +9,7 @@ NET_DOT = '.'
 RESOURCE_JS = 'javascript:'
 RESOURCE_MAILTO = 'mailto:'
 MEDIA_EXT = ['.jpeg', '.jpg', '.gif', '.mp3', '.avi', '.wmv', '.png', '.wav',
-	     '.bmp']
+	     '.bmp', '.pdf', '.zip','.eps']
 DOMAIN_PARTS = 3
 
 def get_domain(url):
