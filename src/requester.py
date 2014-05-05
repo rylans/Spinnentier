@@ -28,7 +28,8 @@ class Requester(threading.Thread):
 	logging.warning("Request for " + url + " exceed max size.")
 	return
 
-      if 'text/html' not in r.headers['content-type']:
+      ctype = r.headers.get('content-type', "")
+      if 'text/html' not in ctype:
 	logging.warning("Request for " + url + " was not text/html.")
 	return
 

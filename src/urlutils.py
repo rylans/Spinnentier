@@ -7,7 +7,9 @@ SCHEME_HTTP = 'http://'
 SCHEME_SEP = '://'
 NET_DOT = '.'
 RESOURCE_JS = 'javascript:'
-IMG_EXT = ['.jpeg', '.jpg', '.gif']
+RESOURCE_MAILTO = 'mailto:'
+MEDIA_EXT = ['.jpeg', '.jpg', '.gif', '.mp3', '.avi', '.wmv', '.png', '.wav',
+	     '.bmp']
 DOMAIN_PARTS = 3
 
 def get_domain(url):
@@ -28,7 +30,9 @@ def is_blacklisted(url):
   url = url.lower()
   if RESOURCE_JS in url:
     return True
-  for ext in IMG_EXT:
+  if RESOURCE_MAILTO in url:
+    return True
+  for ext in MEDIA_EXT:
     if ext in url:
       return True
   return False
