@@ -11,11 +11,19 @@ class Indexer:
   def index_page(self, url, html):
     soup = BeautifulSoup(html)
     text = soup.stripped_strings
+    try:
+      url = url.encode('ascii','ignore')
+    except:
+      return None
 
     words = []
     for text_item in text:
       text_split = text_item.split()
       for t in text_split:
+	try:
+	  t = t.encode('ascii','ignore')
+	except:
+	  return None
 	words.append(t.lower())
     
     for word in words:
@@ -37,7 +45,17 @@ class Indexer:
       for url in candidate_url:
 	urls.append(url)
 
-    return urls
+    url_set = set(urls)
+    url_and_count = []
+    for url in url_set:
+      url_c = 0
+      for curl in urls:
+	if url == curl:
+	  url_c += 1
+      url_and_count.append((url_c, url))
+    url_and_count.sort()
+    
+    return [i[1] for i in url_and_count[::-1]]
 
 if __name__ == '__main__':
   index_dict = {}
@@ -49,7 +67,7 @@ if __name__ == '__main__':
     print "Pickle file not found."
 
   idx = Indexer(index_dict)
-  result = idx.search("honda car race")
+  result = idx.search("honda car race chevy")
   print "RESULTS:"
   for i in result:
     print i

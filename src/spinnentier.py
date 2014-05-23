@@ -26,14 +26,13 @@ def main():
     pkl_file.close()
   except IOError:
     print "Pickle file not found."
-    pass
 
   indx = indexer.Indexer(index_dict)
   db_manager = dbmanager.dbmanager(DB_NAME)
   logging.basicConfig(filename = LOG_NAME, 
 		      format='%(asctime)s:%(levelname)s:%(message)s',
 		      filemode='w', level=logging.WARN)
-  frontier = ['http://www.theonion.com','http://www.reddit.com']
+  frontier = ['http://www.theonion.com','http://www.reddit.com','https://en.wikipedia.org/wiki/Satire']
   visited = {}
   domains = {}
   db_visited = db_manager.get_visited()
