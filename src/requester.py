@@ -14,6 +14,7 @@ class Requester(threading.Thread):
     return 200 <= status_code < 299
 
   def run(self):
+    allowable_ctypes = ['text/html', 'text/plain']
     url = self.url
     r = None
     try:
@@ -29,8 +30,13 @@ class Requester(threading.Thread):
 	return
 
       ctype = r.headers.get('content-type', "")
-      if 'text/html' not in ctype:
-	logging.warning("Request for " + url + " was not text/html but rather " + ctype)
+      allowable = False
+      for allowable_ctype in allowable_ctypes:
+	if allowable_ctype in ctype:
+	  allowable = True
+
+      if not allowable:
+	logging.warning("Request for " + url + " was not an allowed content type but rather " + ctype)
 	return
 
       if self.http_success(r.status_code):
