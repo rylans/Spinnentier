@@ -7,6 +7,7 @@ from urlutils import is_same_domain
 from urlutils import get_domain
 from urlutils import is_blacklisted
 from urlutils import join_urls
+import indexer
 
 DB_NAME = "crawler.db"
 LOG_NAME = "crawler.log"
@@ -16,6 +17,7 @@ TIME_LIMIT = 0.7
 MAX_SIZE_BYTES = 1024 * 512
 
 def main():
+  indx = indexer.Indexer()
   db_manager = dbmanager.dbmanager(DB_NAME)
   logging.basicConfig(filename = LOG_NAME, 
 		      format='%(asctime)s:%(levelname)s:%(message)s',
@@ -82,6 +84,7 @@ def main():
 	db_manager.insert_visited(t_urls[i], len(htmldata))
 
 	page_urls = list(set(get_urls(t_urls[i], htmldata)))
+	indx.index_page(t_urls[i], htmldata)
 	db_manager.insert_frontier(page_urls, t_urls[i])
 	frontier += page_urls
 
