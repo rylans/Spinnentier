@@ -28,6 +28,8 @@ def is_absolute(url):
 
 def is_blacklisted(url):
   url = url.lower()
+  if '?' in url:
+    return True
   if RESOURCE_JS in url:
     return True
   if RESOURCE_MAILTO in url:
