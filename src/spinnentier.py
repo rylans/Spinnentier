@@ -8,6 +8,7 @@ from urlutils import get_domain
 from urlutils import is_blacklisted
 from urlutils import join_urls
 import indexer
+import pickle
 
 DB_NAME = "crawler.db"
 LOG_NAME = "crawler.log"
@@ -17,7 +18,17 @@ TIME_LIMIT = 0.7
 MAX_SIZE_BYTES = 1024 * 512
 
 def main():
-  indx = indexer.Indexer()
+  index_dict = {}
+
+  try:
+    pkl_file = open(indexer.Indexer.filename, 'rb')
+    index_dict = pickle.load(pkl_file)
+    pkl_file.close()
+  except IOError:
+    print "Pickle file not found."
+    pass
+
+  indx = indexer.Indexer(index_dict)
   db_manager = dbmanager.dbmanager(DB_NAME)
   logging.basicConfig(filename = LOG_NAME, 
 		      format='%(asctime)s:%(levelname)s:%(message)s',
@@ -87,6 +98,10 @@ def main():
 	indx.index_page(t_urls[i], htmldata)
 	db_manager.insert_frontier(page_urls, t_urls[i])
 	frontier += page_urls
+
+      output_pkl = open(indexer.Indexer.filename, 'wb')
+      pickle.dump(indx.index, output_pkl)
+      output_pkl.close()
 
       threads = []
       data = []
